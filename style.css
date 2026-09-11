@@ -1,0 +1,428 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Puzzle Box — style.css
+   Пастельно-candy палитра, скругления 12–24px, мягкие тени, «сочные» кнопки.
+   Тема: [data-theme="dark"] на <html>. Анимации уважают prefers-reduced-motion.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Токены: светлая тема ─────────────────────────────────────────────── */
+:root {
+  --bg: #FAF6F0;
+  --ink: #463F5E;
+  --muted: #8D87A6;
+  --card: rgba(255, 255, 255, 0.72);
+  --card-solid: #FFFFFF;
+  --chip-bg: rgba(255, 255, 255, 0.75);
+  --chip-border: rgba(70, 63, 94, 0.08);
+  --shadow: 0 14px 34px rgba(93, 82, 140, 0.14);
+  --shadow-lg: 0 24px 60px rgba(93, 82, 140, 0.22);
+  --track: rgba(70, 63, 94, 0.08);
+  --ok: #2FB47C;
+  --gold: #E8A020;
+
+  /* Акценты текущей игры (перезаписывает main.js под каждую игру) */
+  --ga1: #FF8FB1;
+  --ga2: #B78CFF;
+
+  /* Палитра для canvas-игр (игры читают её через UI.palette()) */
+  --cv-board: #FFFCF5;
+  --cv-track: #F0E8DC;
+  --cv-ink: #4A4458;
+  --cv-line: rgba(74, 68, 88, 0.10);
+  --cv-dim: rgba(56, 44, 80, 0.32);
+  --cv-face-a: #FFFDF6;
+  --cv-face-b: #EFE4CE;
+  --cv-slab: #DACBAA;
+  --cv-glow: #39C48F;
+}
+
+/* ── Токены: тёмная тема ──────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg: #211D33;
+  --ink: #EFEDFB;
+  --muted: #9B95B8;
+  --card: rgba(40, 35, 62, 0.72);
+  --card-solid: #2C2742;
+  --chip-bg: rgba(40, 35, 62, 0.8);
+  --chip-border: rgba(239, 237, 251, 0.07);
+  --shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --track: rgba(239, 237, 251, 0.09);
+
+  --cv-board: #2C2742;
+  --cv-track: #3A3455;
+  --cv-ink: #ECE9FB;
+  --cv-line: rgba(236, 233, 251, 0.08);
+  --cv-dim: rgba(10, 8, 20, 0.45);
+  --cv-face-a: #3B3557;
+  --cv-face-b: #2E2946;
+  --cv-slab: #211D35;
+  --cv-glow: #4ADBA2;
+}
+
+/* ── База ─────────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: "Nunito", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  transition: background 0.35s ease, color 0.35s ease;
+}
+button { font: inherit; color: inherit; }
+canvas { display: block; }
+::selection { background: rgba(255, 143, 177, 0.35); }
+:focus-visible { outline: 3px solid rgba(127, 100, 247, 0.55); outline-offset: 2px; border-radius: 10px; }
+
+/* ── Параллакс-фон: пятна-градиенты медленно плывут (40–70 с),
+      плюс лёгкий сдвиг вслед за курсором (см. main.js: --mx/--my) ─────── */
+.bg {
+  position: fixed; inset: -12%;
+  z-index: -1; pointer-events: none;
+  transform: translate(calc(var(--mx, 0) * -20px), calc(var(--my, 0) * -14px));
+  transition: transform 0.7s cubic-bezier(.2, .8, .2, 1);
+}
+.blob {
+  position: absolute; border-radius: 50%;
+  opacity: 0.55;
+  will-change: transform;
+}
+[data-theme="dark"] .blob { opacity: 0.3; }
+.blob.b1 { width: 55vmax; height: 55vmax; left: -12vmax; top: -18vmax;
+  background: radial-gradient(circle at 50% 50%, #FFD3E2 0%, rgba(255, 211, 226, 0) 65%);
+  animation: drift1 46s ease-in-out infinite alternate; }
+.blob.b2 { width: 48vmax; height: 48vmax; right: -14vmax; top: 6vmax;
+  background: radial-gradient(circle at 50% 50%, #D4E2FF 0%, rgba(212, 226, 255, 0) 65%);
+  animation: drift2 58s ease-in-out infinite alternate; }
+.blob.b3 { width: 44vmax; height: 44vmax; left: 18vmax; bottom: -20vmax;
+  background: radial-gradient(circle at 50% 50%, #D2F7E3 0%, rgba(210, 247, 227, 0) 65%);
+  animation: drift3 52s ease-in-out infinite alternate; }
+.blob.b4 { width: 34vmax; height: 34vmax; right: 10vmax; bottom: -12vmax;
+  background: radial-gradient(circle at 50% 50%, #FFF0C2 0%, rgba(255, 240, 194, 0) 65%);
+  animation: drift1 64s ease-in-out infinite alternate-reverse; }
+[data-theme="dark"] .blob.b1 { background: radial-gradient(circle at 50% 50%, #6E3D63 0%, rgba(110, 61, 99, 0) 65%); }
+[data-theme="dark"] .blob.b2 { background: radial-gradient(circle at 50% 50%, #2E4A78 0%, rgba(46, 74, 120, 0) 65%); }
+[data-theme="dark"] .blob.b3 { background: radial-gradient(circle at 50% 50%, #2A5D50 0%, rgba(42, 93, 80, 0) 65%); }
+[data-theme="dark"] .blob.b4 { background: radial-gradient(circle at 50% 50%, #6B5626 0%, rgba(107, 86, 38, 0) 65%); }
+
+@keyframes drift1 { from { transform: translate(0, 0) scale(1); } to { transform: translate(9vmax, 6vmax) scale(1.12); } }
+@keyframes drift2 { from { transform: translate(0, 0) scale(1.08); } to { transform: translate(-8vmax, 7vmax) scale(0.95); } }
+@keyframes drift3 { from { transform: translate(0, 0) scale(0.94); } to { transform: translate(6vmax, -7vmax) scale(1.1); } }
+
+/* ── Экраны и переходы (300 мс, cubic-bezier) ─────────────────────────── */
+.screen {
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: clamp(14px, 3vw, 34px);
+  max-width: 1180px;
+  transition: opacity 0.3s cubic-bezier(.22, .9, .3, 1), transform 0.3s cubic-bezier(.22, .9, .3, 1);
+}
+.screen[hidden] { display: none !important; }
+.screen.is-enter { opacity: 0; transform: translateY(16px) scale(0.99); }
+.screen.is-exit  { opacity: 0; transform: translateY(-12px) scale(0.99); }
+
+.screen-home { display: flex; flex-direction: column; }
+.screen-game {
+  display: flex; flex-direction: column;
+  height: 100svh; max-width: 1280px;
+}
+
+/* ── Главная: герой ───────────────────────────────────────────────────── */
+.hero { text-align: center; padding: clamp(18px, 5vw, 54px) 0 clamp(10px, 2vw, 22px); }
+.logo {
+  font-size: clamp(48px, 9vw, 76px);
+  line-height: 1;
+  display: inline-block;
+  animation: floaty 4.5s ease-in-out infinite;
+  filter: drop-shadow(0 10px 18px rgba(93, 82, 140, 0.25));
+}
+.hero-title {
+  margin: 10px 0 6px;
+  font-size: clamp(2.1rem, 6.5vw, 3.4rem);
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #FF8FB1 10%, #B78CFF 55%, #6EC1FF 90%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+.hero-tagline { margin: 0 auto 20px; color: var(--muted); font-size: clamp(0.95rem, 2.2vw, 1.1rem); line-height: 1.5; max-width: 46ch; }
+.hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+@keyframes floaty { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-12px) rotate(3deg); } }
+
+/* ── Сетка карточек ───────────────────────────────────────────────────── */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
+  gap: clamp(14px, 2.4vw, 24px);
+  padding-bottom: 30px;
+}
+.game-card {
+  --a1: #8E7CFF; --a2: #C4B5FF;
+  position: relative;
+  background: var(--card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--chip-border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(.22, 1.1, .36, 1), box-shadow 0.25s ease;
+  animation: cardIn 0.5s cubic-bezier(.22, 1.1, .36, 1) backwards;
+}
+.game-card:hover, .game-card:focus-visible {
+  transform: translateY(-6px) scale(1.015);
+  box-shadow: var(--shadow-lg);
+}
+.game-card:active { transform: translateY(-2px) scale(0.99); }
+@keyframes cardIn { from { opacity: 0; transform: translateY(22px) scale(0.96); } }
+
+.card-preview { position: relative; aspect-ratio: 2.15 / 1; overflow: hidden; }
+.card-preview canvas { width: 100%; height: 100%; }
+.card-preview::after { /* мягкая виньетка, чтобы превью читалось как «окно в игру» */
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--a1) 24%, transparent), transparent 55%);
+  pointer-events: none;
+}
+.card-body { padding: 14px 16px 16px; }
+.card-title { display: flex; align-items: center; gap: 10px; }
+.card-icon {
+  width: 40px; height: 40px; flex: 0 0 auto;
+  display: grid; place-items: center; font-size: 22px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--a1), var(--a2));
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--a1) 45%, transparent);
+}
+.card-title h3 { margin: 0; font-size: 1.12rem; letter-spacing: -0.01em; }
+.card-tag { margin: 10px 0 12px; color: var(--muted); font-size: 0.88rem; line-height: 1.45; min-height: 2.5em; }
+.card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.card-best { font-size: 0.85rem; color: var(--muted); font-weight: 700; }
+.card-best.has { color: var(--gold); }
+.card-play {
+  font-weight: 800; font-size: 0.9rem; color: #fff;
+  padding: 8px 16px; border-radius: 999px;
+  background: linear-gradient(135deg, var(--a1), var(--a2));
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--a1) 40%, transparent);
+  transition: transform 0.18s ease;
+}
+.game-card:hover .card-play { transform: scale(1.06); }
+.game-card:hover .card-play::after { content: " →"; }
+
+.footer { text-align: center; color: var(--muted); font-size: 0.82rem; padding: 18px 0 26px; }
+
+/* ── Экран игры: шапка ────────────────────────────────────────────────── */
+.game-topbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding-bottom: 10px;
+}
+.game-title { display: flex; align-items: center; gap: 8px; margin-right: auto; min-width: 0; }
+.game-icon {
+  width: 38px; height: 38px; border-radius: 12px;
+  display: grid; place-items: center; font-size: 20px;
+  background: linear-gradient(135deg, var(--ga1), var(--ga2));
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--ga1) 42%, transparent);
+}
+#game-title { margin: 0; font-size: 1.15rem; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.icon-btn {
+  width: 42px; height: 42px; flex: 0 0 auto;
+  border: 1px solid var(--chip-border);
+  border-radius: 14px;
+  background: var(--card-solid);
+  box-shadow: 0 4px 12px rgba(93, 82, 140, 0.12);
+  font-size: 17px; cursor: pointer;
+  display: grid; place-items: center;
+  transition: transform 0.16s cubic-bezier(.22, 1.2, .36, 1), box-shadow 0.16s ease;
+}
+.icon-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(93, 82, 140, 0.18); }
+.icon-btn:active { transform: scale(0.9); }
+
+/* ── Чипы статистики: счёт «прыгает» классом .bump ────────────────────── */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  min-width: 74px;
+  padding: 5px 12px 6px;
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  border-radius: 14px;
+  text-align: center;
+}
+.chip-label { display: block; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.chip-value { display: inline-block; font-weight: 800; font-size: 1.02rem; font-variant-numeric: tabular-nums; }
+.chip.gold .chip-value { color: var(--gold); }
+.chip-value.bump { animation: bump 0.4s cubic-bezier(.22, 1.4, .36, 1); }
+@keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.28); } 100% { transform: scale(1); } }
+
+/* ── Панель игры (цели, подсказки) и контейнер canvas ────────────────── */
+.game-extra {
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+  padding: 2px 0 10px;
+}
+.game-extra:empty { display: none; }
+.game-mount {
+  flex: 1 1 auto; min-height: 300px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 4px 6px 16px;
+}
+.game-mount canvas { touch-action: none; border-radius: 18px; }
+
+/* Вспомогательная тряска (промах, смерть в змейке) */
+.shake { animation: shake 0.42s cubic-bezier(.36, .07, .19, .97); }
+@keyframes shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60% { transform: translateX(6px); }
+}
+
+/* ── Кнопки ───────────────────────────────────────────────────────────── */
+.btn {
+  border: none; cursor: pointer;
+  border-radius: 14px;
+  padding: 12px 22px;
+  font-weight: 800; font-size: 0.95rem;
+  transition: transform 0.16s cubic-bezier(.22, 1.2, .36, 1), box-shadow 0.16s ease, filter 0.16s ease;
+}
+.btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+.btn:active { transform: scale(0.95); }
+.btn-primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--ga1), var(--ga2));
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--ga1) 45%, transparent);
+}
+.btn-ghost {
+  background: var(--card-solid);
+  color: var(--ink);
+  border: 1px solid var(--chip-border);
+  box-shadow: 0 4px 12px rgba(93, 82, 140, 0.1);
+}
+
+/* ── Модалки: плавное появление (scale 0.86→1 + fade, 300 мс) ────────── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  display: grid; place-items: center; padding: 20px;
+  background: rgba(38, 28, 60, 0.45);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.modal-overlay.open { opacity: 1; }
+.modal-overlay.closing { opacity: 0; }
+.modal {
+  width: min(92vw, 400px);
+  background: var(--card-solid);
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
+  padding: 26px 24px 22px;
+  text-align: center;
+  transform: scale(0.86) translateY(16px);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(.22, 1.2, .36, 1), opacity 0.3s ease;
+}
+.modal-overlay.open .modal { transform: none; opacity: 1; }
+.modal-icon { font-size: 54px; line-height: 1; animation: popIn 0.45s cubic-bezier(.22, 1.4, .36, 1); }
+@keyframes popIn { from { transform: scale(0.4); } 70% { transform: scale(1.15); } to { transform: scale(1); } }
+.modal-title { margin: 12px 0 4px; font-size: 1.45rem; letter-spacing: -0.01em; }
+.modal-sub { margin: 0 0 6px; color: var(--muted); line-height: 1.5; font-size: 0.95rem; }
+.record-badge {
+  display: inline-block; margin: 8px 0 2px;
+  padding: 7px 16px; border-radius: 999px;
+  font-weight: 800; font-size: 0.9rem; color: #fff;
+  background: linear-gradient(120deg, #F6C247, #F2925B);
+  box-shadow: 0 8px 18px rgba(242, 146, 91, 0.4);
+  animation: shine 1.6s ease-in-out infinite;
+}
+@keyframes shine { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.18); } }
+.modal-stats { margin: 14px 0 6px; display: grid; gap: 6px; }
+.stat-row {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--track); border-radius: 12px; padding: 9px 14px;
+  font-size: 0.92rem;
+}
+.stat-row b { font-variant-numeric: tabular-nums; }
+.modal-actions { display: flex; flex-direction: column; gap: 9px; margin-top: 16px; }
+
+/* ── Настройки: переключатели, слайдеры, сегменты ─────────────────────── */
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 9px 2px; }
+.settings-row > span { font-weight: 700; font-size: 0.95rem; text-align: left; }
+.settings-note { color: var(--muted); font-size: 0.8rem; text-align: left; margin-top: -4px; }
+
+.switch { position: relative; display: inline-block; width: 52px; height: 30px; flex: 0 0 auto; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .track {
+  position: absolute; inset: 0; cursor: pointer;
+  background: var(--track); border-radius: 999px;
+  transition: background 0.25s ease;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.12);
+}
+.switch .track::before {
+  content: ""; position: absolute; left: 3px; top: 3px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; box-shadow: 0 3px 7px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s cubic-bezier(.22, 1.3, .36, 1);
+}
+.switch input:checked + .track { background: linear-gradient(120deg, #7FD98F, #34C38F); }
+.switch input:checked + .track::before { transform: translateX(22px); }
+
+.slider { -webkit-appearance: none; appearance: none; width: 150px; height: 8px; border-radius: 999px; background: var(--track); cursor: pointer; }
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--ga1), var(--ga2));
+  box-shadow: 0 3px 8px rgba(93, 82, 140, 0.35);
+  border: 2px solid #fff;
+}
+.slider::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #B78CFF; border: 2px solid #fff; }
+
+.segmented { display: inline-flex; background: var(--track); border-radius: 999px; padding: 4px; }
+.segmented button {
+  border: none; cursor: pointer; background: transparent;
+  border-radius: 999px; padding: 7px 16px;
+  font-weight: 800; font-size: 0.85rem; color: var(--muted);
+  transition: all 0.2s ease;
+}
+.segmented button.active { background: var(--card-solid); color: var(--ink); box-shadow: 0 3px 8px rgba(93, 82, 140, 0.2); }
+
+/* ── Тосты ────────────────────────────────────────────────────────────── */
+.toast-root { position: fixed; left: 0; right: 0; bottom: 22px; z-index: 130; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.toast {
+  max-width: min(88vw, 420px);
+  background: var(--card-solid);
+  border: 1px solid var(--chip-border);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  padding: 11px 20px; border-radius: 16px;
+  font-weight: 700; font-size: 0.9rem; text-align: center;
+  opacity: 0; transform: translateY(70px) scale(0.9);
+  transition: opacity 0.3s cubic-bezier(.22, 1.2, .36, 1), transform 0.3s cubic-bezier(.22, 1.2, .36, 1);
+}
+.toast.show { opacity: 1; transform: none; }
+
+/* ── Конфетти-канвас ──────────────────────────────────────────────────── */
+#fx-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 120; pointer-events: none; }
+
+/* ── Мелкие экраны ────────────────────────────────────────────────────── */
+@media (max-width: 560px) {
+  .game-topbar { gap: 7px; }
+  .icon-btn { width: 38px; height: 38px; border-radius: 12px; }
+  .chip { min-width: 62px; padding: 4px 9px 5px; }
+  .chip-value { font-size: 0.92rem; }
+  .games-grid { grid-template-columns: repeat(auto-fill, minmax(164px, 1fr)); gap: 12px; }
+  .card-tag { font-size: 0.8rem; }
+  .game-mount { min-height: 260px; }
+}
+
+/* ── prefers-reduced-motion: гасим всю декоративную motion-графику.
+      Игровые canvas-анимации отключаются отдельно (UI.animsOn() в JS). ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .blob { animation: none !important; }
+  .bg { transition: none !important; transform: none !important; }
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Puzzle Box — шесть мини-головоломок</title>
+<meta name="description" content="Шесть уютных головоломок в одном стиле: Block Blast, мэтч-3, Маджонг, 2048, Two Dots и Змейка. Без сборщиков: чистый HTML+CSS+JS, Canvas, Web Audio.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧩</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ═══ ПАРАЛЛАКС-ФОН: медленно плывущие градиентные пятна (CSS-анимации + лёгкий сдвиг за курсором) ═══ -->
+  <div class="bg" id="bg" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+    <div class="blob b4"></div>
+  </div>
+
+  <!-- ═══ ЭКРАН 1: ГЛАВНАЯ — сетка карточек игр ═══ -->
+  <main id="screen-home" class="screen screen-home">
+    <header class="hero">
+      <div class="logo" aria-hidden="true">🧩</div>
+      <h1 class="hero-title">Puzzle&nbsp;Box</h1>
+      <p class="hero-tagline">Шесть уютных головоломок в одном стиле.<br>Рекорды и настройки — прямо в браузере.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="btn-random" type="button">🎲 Случайная игра</button>
+        <button class="btn btn-ghost" id="btn-settings-home" type="button">⚙️ Настройки</button>
+        <button class="btn btn-ghost" id="btn-theme-home" type="button">🌗 Тема</button>
+      </div>
+    </header>
+
+    <section class="games-grid" id="games-grid" aria-label="Список игр"></section>
+
+    <footer class="footer">Чистый HTML + CSS + JS · Canvas · Web Audio API · localStorage</footer>
+  </main>
+
+  <!-- ═══ ЭКРАН 2: ИГРА — поле, счёт, ходы, пауза/рестарт/звук ═══ -->
+  <main id="screen-game" class="screen screen-game" hidden>
+    <div class="game-topbar">
+      <button class="icon-btn" id="btn-back" type="button" title="В меню (Esc)" aria-label="В меню">←</button>
+      <div class="game-title">
+        <span class="game-icon" id="game-icon" aria-hidden="true">🎮</span>
+        <h2 id="game-title">Игра</h2>
+      </div>
+      <div class="chips" id="game-chips" aria-live="polite"></div>
+      <div class="game-controls">
+        <button class="icon-btn" id="btn-pause" type="button" title="Пауза" aria-label="Пауза">⏸</button>
+        <button class="icon-btn" id="btn-restart" type="button" title="Заново" aria-label="Заново">↻</button>
+        <button class="icon-btn" id="btn-mute" type="button" title="Звук вкл/выкл" aria-label="Звук">🔊</button>
+        <button class="icon-btn" id="btn-settings-game" type="button" title="Настройки" aria-label="Настройки">⚙️</button>
+      </div>
+    </div>
+
+    <!-- Панель под шапкой: цели уровня, кнопки вроде «Подсказка» — контент задаёт сама игра -->
+    <div class="game-extra" id="game-extra" hidden></div>
+
+    <!-- Сюда игра вставляет свой <canvas> -->
+    <div class="game-mount" id="game-mount"></div>
+  </main>
+
+  <!-- Тосты (неблокирующие подсказки) -->
+  <div class="toast-root" id="toast-root" aria-live="polite"></div>
+
+  <!-- Оверлей для конфетти (canvas поверх всего, не ловит события) -->
+  <canvas id="fx-canvas" aria-hidden="true"></canvas>
+
+  <!-- Корень модалок: победа/проигрыш/пауза/настройки -->
+  <div id="modal-root"></div>
+
+  <noscript>Для игры нужен включённый JavaScript.</noscript>
+
+  <!-- Порядок важен: реестр → хранилище → звук → UI-утилиты → приложение → игры -->
+  <script src="js/registry.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/games/blockblast.js"></script>
+  <script src="js/games/match3.js"></script>
+  <script src="js/games/mahjong.js"></script>
+  <script src="js/games/game2048.js"></script>
+  <script src="js/games/twodots.js"></script>
+  <script src="js/games/snake.js"></script>
+</body>
+</html>
